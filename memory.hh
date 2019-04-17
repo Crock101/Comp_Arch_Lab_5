@@ -54,8 +54,8 @@ class MainMem{
   Block blocks[BLOCKS_IN_MEMORY];
   MainMem(){ }  //constructor
   ~MainMem(){ }  //destructor
-  //int getData(int);
-  //int putData(int, int);
+  int getData(int address);
+  void putData(int address, int value);
 };//class MainMem
 //-------------------------------------
 

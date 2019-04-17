@@ -23,6 +23,36 @@ void printCacheOrg(int org)
     printf ("ERROR: WRONG CACHE ORG\n");
 }
 
+int directGetData(int address)
+{
+
+}
+
+void directPutData(int address, int value)
+{
+
+}
+
+int twoWayGetData(int address)
+{
+
+}
+
+void twoWayPutData(int address, int value)
+{
+
+}
+
+int fullyGetData(int address)
+{
+
+}
+
+void fullyPutData(int address, int value)
+{
+
+}
+
 int Cache::getData(int address)
 {
   int data;
@@ -33,5 +63,18 @@ int Cache::getData(int address)
 void Cache::putData(int address, int value)
 {
   // implement your code here
-  ;
 }
+
+int MainMem::getData(int address)
+{
+    int data;
+    // implement your code here
+    return data;
+}
+
+void MainMem::putData(int address, int value)
+{
+    // implement your code here
+}
+
+
