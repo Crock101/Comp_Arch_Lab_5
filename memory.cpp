@@ -67,14 +67,26 @@ void Cache::putData(int address, int value)
 
 int MainMem::getData(int address)
 {
-    int data;
-    // implement your code here
-    return data;
+    //The address in memory is the upper 30 bits of the address
+    int memoryAddress = (address >> 2);
+
+    //The byte offset is the lower two bits of the address
+    int byteOffest = address & 0x0002;
+
+    //Return the correct word from the correct block in memory
+    return blocks[memoryAddress].data[byteOffest];
 }
 
 void MainMem::putData(int address, int value)
 {
-    // implement your code here
+    //The address in memory is the upper 30 bits of the address
+    int memoryAddress = (address >> 2);
+
+    //The byte offset is the lower two bits of the address
+    int byteOffest = address & 0x0002;
+
+    //Store the value in the the correct word in the correct block in memory
+    blocks[memoryAddress].data[byteOffest] = value;
 }
 
 
