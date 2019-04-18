@@ -173,7 +173,91 @@ int Cache::getData(int address)
   }
   else if (cache_org == FULLY)
   {
-      return fullyGetData(address);
+      //The tag is the upper 30 bits of the address
+      int tag = (address >> 2);
+
+      //The byte offset is the lower two bits of the address
+      int byteOffest = address & 0x0003;
+
+      int  leastReacentlyUsedIndex;
+
+      unsigned int  leastReacentlyUsedTime = 0xffff;
+
+      //Search through entire cache for a block with an invalid bit,
+      //the correct tag number, or the lowest last_used field
+      for (int i = 0; i < BLOCKS_IN_CACHE; i++)
+      {
+          //If the current block is valid and has the correct sequence number
+          if (cblocks[i].valid == 1 && cblocks[i].tag == tag)
+          {
+              //Update the last used field of the block
+              cblocks[i].last_used = clockX;
+
+              //Increament the clock by 2
+              clockX += 2;
+
+              //Return the correct word from the block
+              return cblocks[i].data[byteOffest];
+
+          }
+
+          //If the block is invalid
+          else if (cblocks[i].valid == 0)
+          {
+              //Mark the block as valid
+              cblocks[i].valid = 1;
+
+              //Load in all four words from memory
+              cblocks[i].data[0] = MainMemory.getData((tag << 4) | (i << 2) | 0);
+              cblocks[i].data[1] = MainMemory.getData((tag << 4) | (i << 2) | 1);
+              cblocks[i].data[2] = MainMemory.getData((tag << 4) | (i << 2) | 2);
+              cblocks[i].data[3] = MainMemory.getData((tag << 4) | (i << 2) | 3);
+
+              //Update the tag of the block
+              cblocks[i].tag = tag;
+
+              //Update the last used field of the block
+              cblocks[i].last_used = clockX;
+
+              //Increament the clock by 102
+              clockX += 102;
+
+              //Return the correct word from the block
+              return cblocks[i].data[byteOffest];
+
+          }
+
+          //The block is valid with an incorrect tag,
+          //and is the oldest one
+          else if (cblocks[i].last_used < leastReacentlyUsedTime)
+          {
+              //Store the access time of the block
+              leastReacentlyUsedTime = cblocks[i].last_used;
+
+              //Store the index of the block
+              leastReacentlyUsedIndex = i;
+          }
+      }
+
+      //Evict the least recently used block
+
+      //Load in all four words from memory
+      cblocks[leastReacentlyUsedIndex].data[0] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 0);
+      cblocks[leastReacentlyUsedIndex].data[1] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 1);
+      cblocks[leastReacentlyUsedIndex].data[2] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 2);
+      cblocks[leastReacentlyUsedIndex].data[3] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 3);
+
+      //Update the tag of the block
+      cblocks[leastReacentlyUsedIndex].tag = tag;
+
+      //Update the last used field of the block
+      cblocks[leastReacentlyUsedIndex].last_used = clockX;
+
+      //Increament the clock by 102
+      clockX += 102;
+
+      //Return the correct word from the block
+      return cblocks[leastReacentlyUsedIndex].data[byteOffest];
   }
 }
 
@@ -330,7 +414,99 @@ void Cache::putData(int address, int value)
     }
     else if (cache_org == FULLY)
     {
-        fullyPutData(address, value);
+    //The tag is the upper 30 bits of the address
+    int tag = (address >> 2);
+
+    //The byte offset is the lower two bits of the address
+    int byteOffest = address & 0x0003;
+
+    int  leastReacentlyUsedIndex;
+
+    unsigned int  leastReacentlyUsedTime = 0xffff;
+
+    //Search through entire cache for a block with an invalid bit,
+    //the correct tag number, or the lowest last_used field
+    for (int i = 0; i < BLOCKS_IN_CACHE; i++)
+    {
+        //If the current block is valid and has the correct sequence number
+        if (cblocks[i].valid == 1 && cblocks[i].tag == tag)
+        {
+            //Write the word to the cache
+            cblocks[i].data[byteOffest] = value;
+
+            //Write the word to the main memory
+            MainMemory.putData(address, value);
+
+            //Update the last used field of the block
+            cblocks[i].last_used = clockX;
+
+            //Increament the clock by 102
+            clockX += 102;
+
+            return;
+        }
+
+        //If the block is invalid
+        else if (cblocks[i].valid == 0)
+        {
+            //Increase the number of misses
+            numMisses++;
+
+            //Write the word to the main memory
+            MainMemory.putData(address, value);
+
+            //Mark the block as valid
+            cblocks[i].valid = 1;
+
+            //Load in all four words from memory
+            cblocks[i].data[0] = MainMemory.getData((tag << 4) | (i << 2) | 0);
+            cblocks[i].data[1] = MainMemory.getData((tag << 4) | (i << 2) | 1);
+            cblocks[i].data[2] = MainMemory.getData((tag << 4) | (i << 2) | 2);
+            cblocks[i].data[3] = MainMemory.getData((tag << 4) | (i << 2) | 3);
+
+            //Update the tag of the block
+            cblocks[i].tag = tag;
+
+            //Update the last used field of the block
+            cblocks[i].last_used = clockX;
+
+            //Increament the clock by 102
+            clockX += 102;
+
+            return;
+        }
+
+        //The block is valid with an incorrect tag,
+        //and is the oldest one
+        else if (cblocks[i].last_used < leastReacentlyUsedTime)
+        {
+            //Store the access time of the block
+            leastReacentlyUsedTime = cblocks[i].last_used;
+
+            //Store the index of the block
+            leastReacentlyUsedIndex = i;
+        }
+    }
+
+    //Evict the least recently used block
+
+    //Write the word to the main memory
+    MainMemory.putData(address, value);
+
+    //Load in all four words from memory
+    cblocks[leastReacentlyUsedIndex].data[0] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 0);
+    cblocks[leastReacentlyUsedIndex].data[1] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 1);
+    cblocks[leastReacentlyUsedIndex].data[2] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 2);
+    cblocks[leastReacentlyUsedIndex].data[3] = MainMemory.getData((tag << 4) | (leastReacentlyUsedIndex << 2) | 3);
+
+    //Update the tag of the block
+    cblocks[leastReacentlyUsedIndex].tag = tag;
+
+    //Update the last used field of the block
+    cblocks[leastReacentlyUsedIndex].last_used = clockX;
+
+    //Increament the clock by 102
+    clockX += 102;
     }
 }
 
