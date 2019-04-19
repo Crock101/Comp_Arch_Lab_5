@@ -97,13 +97,38 @@ public:
   
   void showCacheAddress () // show the cache contents
   {
-    for(int j=0; j<BLOCKS_IN_CACHE; j++) {
-      printf("Address in block %d: ", j);
-      for(int k=0; k<WORDS_PER_BLOCK; k++) {
-	;// print out addresses of each block
+      for (int j = 0; j < BLOCKS_IN_CACHE; j++)
+      {
+          if (myCache.cblocks[j].valid == 1)
+          {
+              myCache.cblocks[j].valid = 0;
+
+              printf("Address in block %d:\n", j);
+              for (int k = 0; k < WORDS_PER_BLOCK; k++)
+              {
+                  if (cache_org == DIRECT)
+                  {
+                      //Print the reconstructed address
+                      printf("Word %d: %d\n", k, (myCache.cblocks[j].tag << 5) | (j << 2) | k);
+                  }
+                  else if (cache_org == TWOWAY)
+                  {
+                      //Print the reconstructed address
+                      printf("Word %d: %d\n", k, (myCache.cblocks[j].tag << 4) | ((j / 2) << 2) | k);
+                  }
+                  else if (cache_org == FULLY)
+                  {
+                      //Print the reconstructed address
+                      printf("Word %d: %d\n", k, (myCache.cblocks[j].tag << 2) | k);
+                  }
+              }
+              printf("\n");
+          }
+          else
+          {
+              printf("Block %d is not valid.\n", j);
+          }
       }
-      printf("\n");
-    }
   }
 };
 
