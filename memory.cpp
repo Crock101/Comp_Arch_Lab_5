@@ -407,6 +407,9 @@ void Cache::putData(int address, int value)
             }
         }
 
+        //Increase the number of misses
+        numMisses++;
+
         //Evict the least recently used block
 
         //Write the word to the main memory
