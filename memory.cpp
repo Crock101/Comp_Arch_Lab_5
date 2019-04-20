@@ -25,24 +25,21 @@ void printCacheOrg(int org)
 
 int Cache::getData(int address)
 {
+    //The byte offset is the lower two bits of the address
+    int byteOffest = address & 0x0003;
+
     if (cache_org == DIRECT)
     {
-        //The tag is the upper 27 bits of the address
+        //The tag is the upper 11 bits of the address
         int tag = (address >> 5);
 
         //The index is the lower three bits of the address above the byte offset
-        int index = (address >> 2) & 0x0007;
-
-        //The byte offset is the lower two bits of the address
-        int byteOffest = address & 0x0003;
+        int index = (address >> 2) & 0x07;
 
         //If the block at the index has the correct tag and is valid,
         //and thus is in the cache
         if (cblocks[index].tag == tag && cblocks[index].valid == 1)
         {
-            //Update the last used field of the block
-            cblocks[index].last_used = clockX;
-
             //Increament the clock by 2
             clockX += 2;
         }
@@ -65,14 +62,11 @@ int Cache::getData(int address)
             //Mark the block as valid
             cblocks[index].valid = 1;
 
-            //Update the last used field of the block
-            cblocks[index].last_used = clockX;
-
             //Update the tag of the block
             cblocks[index].tag = tag;
 
             //Increament the clock by 100
-            clockX += 100;
+            clockX += 102;
         }
 
         //Return the correct word from the block in the cache
@@ -80,14 +74,11 @@ int Cache::getData(int address)
     }
     else if (cache_org == TWOWAY)
     {
-        //The tag is the upper 28 bits of the address
+        //The tag is the upper 12 bits of the address
         int tag = (address >> 4);
 
         //The index is the lower two bits of the address above the byte offset
-        int set = (address >> 2) & 0x0003;
-
-        //The byte offset is the lower two bits of the address
-        int byteOffest = address & 0x0003;
+        int set = ((address >> 2) & 0x03);
 
         int  leastReacentlyUsedIndex;
 
@@ -177,11 +168,8 @@ int Cache::getData(int address)
     }
     else if (cache_org == FULLY)
     {
-        //The tag is the upper 30 bits of the address
+        //The tag is the upper 14 bits of the address
         int tag = (address >> 2);
-
-        //The byte offset is the lower two bits of the address
-        int byteOffest = address & 0x0003;
 
         int leastReacentlyUsedIndex;
 
@@ -278,19 +266,34 @@ int Cache::getData(int address)
 
 void Cache::putData(int address, int value)
 {
+    //The byte offset is the lower two bits of the address
+    int byteOffest = address & 0x0003;
+
     if (cache_org == DIRECT)
     {
-        //The tag is the upper 27 bits of the address
+        //The tag is the upper 11 bits of the address
         int tag = (address >> 5);
 
         //The index is the lower three bits of the address above the byte offset
-        int index = (address >> 2) & 0x0007;
+        int index = (address >> 2) & 0x07;
 
-        //The byte offset is the lower two bits of the address
-        int byteOffest = address & 0x0003;
+        //If the block at the index has the correct tag and is valid 
+        if (cblocks[index].tag == tag && cblocks[index].valid == 1)
+        {
+            //Write the word to the cache
+            cblocks[index].data[byteOffest] = value;
 
-        //If the block at the index doesn't have the correct tag or isn't valid 
-        if (!(cblocks[index].tag == tag && cblocks[index].valid == 1))
+            //Write the word to the main memory
+            MainMemory.putData(address, value);
+            
+            //Update the last used field of the block
+            cblocks[index].last_used = clockX;
+
+            //Increament the clock by 102
+            clockX += 102;
+        }
+        
+        else
         {
             //Increase the number of misses
             numMisses++;
@@ -303,41 +306,28 @@ void Cache::putData(int address, int value)
             cblocks[index].data[1] = MainMemory.getData((tag << 5) | (index << 2) | 1);
             cblocks[index].data[2] = MainMemory.getData((tag << 5) | (index << 2) | 2);
             cblocks[index].data[3] = MainMemory.getData((tag << 5) | (index << 2) | 3);
+            
+            //Mark the block as valid
+            cblocks[index].valid = 1;
 
+            //Update the tag of the block
+            cblocks[index].tag = tag;
+
+            //Update the last used field of the block
+            cblocks[index].last_used = clockX;
+
+            //Increament the clock by 202
+            clockX += 202;
         }
-
-        else
-        {
-            //Write the word to the cache
-            cblocks[index].data[byteOffest] = value;
-
-            //Write the word to the main memory
-            MainMemory.putData(address, value);
-        }
-
-        //Mark the block as valid
-        cblocks[index].valid = 1;
-
-        //Update the last used field of the block
-        cblocks[index].last_used = clockX;
-
-        //Update the tag of the block
-        cblocks[index].tag = tag;
-
-        //Increament the clock by 102
-        clockX += 102;
 
     }
     else if (cache_org == TWOWAY)
     {
-        //The tag is the upper 28 bits of the address
+        //The tag is the upper 12 bits of the address
         int tag = (address >> 4);
 
         //The index is the lower two bits of the address above the byte offset
-        int set = (address >> 2) & 0x0003;
-
-        //The byte offset is the lower two bits of the address
-        int byteOffest = address & 0x0003;
+        int set = ((address >> 2) & 0x03);
 
         int  leastReacentlyUsedIndex;
 
@@ -345,7 +335,7 @@ void Cache::putData(int address, int value)
 
         //Search through the set for a block with an invalid bit,
         //the correct tag number, or the lowest last_used field
-        for (int i = 2 * set; i < 2 * (set + 1); i++)
+        for (int i = (2 * set); i < (2 * (set + 1)); i++)
         {
             //If the current block is valid and has the correct sequence number
             if (cblocks[i].valid == 1 && cblocks[i].tag == tag)
@@ -390,7 +380,7 @@ void Cache::putData(int address, int value)
                 cblocks[i].last_used = clockX;
 
                 //Increament the clock by 102
-                clockX += 102;
+                clockX += 202;
 
                 return;
             }
@@ -427,16 +417,13 @@ void Cache::putData(int address, int value)
         //Update the last used field of the block
         cblocks[leastReacentlyUsedIndex].last_used = clockX;
 
-        //Increament the clock by 102
-        clockX += 102;
+        //Increament the clock by 202
+        clockX += 202;
     }
     else if (cache_org == FULLY)
     {
-    //The tag is the upper 30 bits of the address
+    //The tag is the upper 14 bits of the address
     int tag = (address >> 2);
-
-    //The byte offset is the lower two bits of the address
-    int byteOffest = address & 0x0003;
 
     int  leastReacentlyUsedIndex;
 
@@ -488,8 +475,8 @@ void Cache::putData(int address, int value)
             //Update the last used field of the block
             cblocks[i].last_used = clockX;
 
-            //Increament the clock by 102
-            clockX += 102;
+            //Increament the clock by 202
+            clockX += 202;
 
             return;
         }
@@ -526,8 +513,8 @@ void Cache::putData(int address, int value)
     //Update the last used field of the block
     cblocks[leastReacentlyUsedIndex].last_used = clockX;
 
-    //Increament the clock by 102
-    clockX += 102;
+    //Increament the clock by 202
+    clockX += 202;
     }
     else
     {
