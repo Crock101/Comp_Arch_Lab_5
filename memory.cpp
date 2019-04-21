@@ -1,3 +1,18 @@
+/**********************************************
+ *
+ * Program Title: Lab_5
+ *
+ * Program File Name: memory.cpp
+ *
+ * Computer Architecture & Design EECE.4820-201
+ *
+ * Spring 2019
+ *
+ * Authors: Justice Graves and Colin Rockwood
+ *
+ * April 20th, 2019
+ *
+ **********************************************/
 #include "memory.hh"
 
 unsigned int clockX;

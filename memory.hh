@@ -1,3 +1,19 @@
+/**********************************************
+ *
+ * Program Title: Lab_5
+ *
+ * Program File Name: memory.hh
+ *
+ * Computer Architecture & Design EECE.4820-201
+ *
+ * Spring 2019
+ *
+ * Authors: Justice Graves and Colin Rockwood
+ *
+ * April 20th, 2019
+ *
+ **********************************************/
+
 #ifndef MEMORY_HH_
 #define MEMORY_HH_
 #include <stdio.h>
