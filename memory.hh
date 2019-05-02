@@ -125,20 +125,34 @@ public:
                   if (cache_org == DIRECT)
                   {
                       //Print the reconstructed address
-                      printf("Word %d: %d\n", k, (myCache.cblocks[j].tag << 5) | (j << 2) | k);
+                      printf("Word: %d\n", k);
+                      printf("Full Address: %d\n", (myCache.cblocks[j].tag << 5) | (j << 2) | k);
+                      printf("Index: %d\n", j);
+                      printf("Tag: %d\n", myCache.cblocks[j].tag);
+                      printf("Last Time Used: %d\n\n", myCache.cblocks[j].last_used);
                   }
                   else if (cache_org == TWOWAY)
                   {
                       //Print the reconstructed address
-                      printf("Word %d: %d\n", k, (myCache.cblocks[j].tag << 4) | ((j / 2) << 2) | k);
+                      printf("Word: %d\n", k);
+                      printf("Full Address: %d\n", (myCache.cblocks[j].tag << 4) | ((j / 2) << 2) | k);
+                      printf("Set: %d\n", (j / 2));
+                      printf("Way: %d\n", (j % 2));
+                      printf("Tag: %d\n", myCache.cblocks[j].tag);
+                      printf("Last Time Used: %d\n\n", myCache.cblocks[j].last_used);
                   }
                   else if (cache_org == FULLY)
                   {
                       //Print the reconstructed address
-                      printf("Word %d: %d\n", k, (myCache.cblocks[j].tag << 2) | k);
+                      printf("Word: %d\n", k);
+                      printf("Full Address: %d\n", (myCache.cblocks[j].tag << 2) | k);
+                      printf("Set: %d\n", 0);
+                      printf("Way: %d\n", j);
+                      printf("Tag: %d\n", myCache.cblocks[j].tag);
+                      printf("Last Time Used: %d\n\n", myCache.cblocks[j].last_used);
                   }
               }
-              printf("\n");
+              printf("\n\n");
           }
           else
           {
